@@ -1,16 +1,24 @@
+`use strict`
+
 import { Router } from "express";
 import {
     getAccounts,
-    getAccountById,
+    getAccountByNumber,
     updateAccount,
     deleteAccount
 } from "./accounts.controller.js";
 
 const router = Router();
 
-router.get('/', getAccounts);
-router.get('/:id', getAccountById);
-router.put('/:id', updateAccount);
-router.delete('/:id', deleteAccount);
+// Obtener todas las cuentas
+router.get("/", getAccounts);
+
+// Obtener una cuenta específica por su número
+router.get("/:numero_cuenta", getAccountByNumber);
+
+// Actualizar 
+router.put("/:numero_cuenta", updateAccount);
+
+router.delete("/:numero_cuenta", deleteAccount);
 
 export default router;

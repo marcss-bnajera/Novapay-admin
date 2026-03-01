@@ -1,14 +1,73 @@
 `use strict`
 
 import { User } from "./users.model.js";
+import { Account } from "../accounts/accounts.model.js";
+import { db } from "../../configs/db.js";
+import bcrypt from "bcrypt";
 
 
-// Funciones de administrador
+// 1. Agregar un nuevo Cliente 
+export const saveUser = async (req, res) => {
+    const t = await db.transaction(); // Inicia transacción para asegurar que se creen ambos o ninguno
+    try {
+        const data = req.body;
 
-// Obtener todos los usuarios
+        // Validación de Ingresos Mensuales
+        if (parseFloat(data.ingresos_mensuales) < 100) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: "Los ingresos mensuales deben ser mayores a Q100 para crear una cuenta."
+            });
+        }
+
+        // Encriptar la contraseña antes de guardar
+        const salt = await bcrypt.genSalt(10);
+        data.password = await bcrypt.hash(data.password, salt);
+
+        // Crear el Usuario
+        const newUser = await User.create(data, { transaction: t });
+
+        // Generar No. Cuenta aleatorio de 10 dígitos
+        const randomAccountNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+
+        // Crear la Cuenta automáticamente vinculada al nuevo Usuario
+        await Account.create({
+            numero_cuenta: randomAccountNumber,
+            nombre_cuenta: `Cuenta Principal - ${newUser.nombre} ${newUser.apellido}`,
+            tipo_cuenta: data.tipo_cuenta || "AHORRO",
+            balance: 0.00,
+            usuario_id: newUser.id
+        }, { transaction: t });
+
+        // Confirmar cambios en la base de datos
+        await t.commit();
+
+        res.status(201).json({
+            success: true,
+            message: "Cliente creado exitosamente con su número de cuenta",
+            accountNumber: randomAccountNumber
+        });
+
+    } catch (error) {
+        // Si algo falla (ej: DPI duplicado), deshace todo
+        await t.rollback();
+        res.status(500).json({
+            success: false,
+            message: "Error al registrar el cliente y su cuenta",
+            error: error.message
+        });
+    }
+};
+
+// 2. Obtener todos los usuarios
 export const getUsers = async (req, res) => {
     try {
-        const users = await User.findAll();
+        // Incluimos la cuenta para ver el saldo como pide el requerimiento
+        const users = await User.findAll({
+            where: { active: true },
+            include: [{ model: Account }]
+        });
         res.status(200).json({
             success: true,
             total: users.length,
@@ -23,11 +82,13 @@ export const getUsers = async (req, res) => {
     }
 };
 
-// Obtener usuario por ID
+// 3. Obtener usuario por ID
 export const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(id, {
+            include: [{ model: Account }]
+        });
 
         if (!user) {
             return res.status(404).json({
@@ -49,26 +110,26 @@ export const getUserById = async (req, res) => {
     }
 };
 
-// Actualizar usuario
+// 4. Actualizar usuario 
 export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const userData = req.body;
+        const { dpi, password, role_id, active, username, ...restOfData } = req.body; // Extraemos para ignorarlos
 
-        const [affectedCount] = await User.update(userData, {
+        const [affectedCount] = await User.update(restOfData, {
             where: { id }
         });
 
         if (affectedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Usuario no encontrado o no hubo cambios"
+                message: "Usuario no encontrado o no hubo cambios permitidos"
             });
         }
 
         res.status(200).json({
             success: true,
-            message: "Usuario actualizado exitosamente"
+            message: "Usuario actualizado"
         });
     } catch (error) {
         res.status(500).json({
@@ -79,30 +140,37 @@ export const updateUser = async (req, res) => {
     }
 };
 
-// Eliminar usuario
+// "Eliminar" usuario (Desactivación Lógica)
 export const deleteUser = async (req, res) => {
+    const t = await db.transaction();
     try {
         const { id } = req.params;
 
-        const deleteRows = await User.destroy({
-            where: { id }
-        });
-
-        if (deleteRows === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "Usuario no encontrado"
-            });
+        // 1. Desactivamos al Usuario
+        const user = await User.findByPk(id);
+        if (!user) {
+            await t.rollback();
+            return res.status(404).json({ success: false, message: "Usuario no encontrado" });
         }
 
+        await user.update({ active: false }, { transaction: t });
+
+        // 2. Desactivamos TODAS sus cuentas asociadas
+        await Account.update(
+            { estado: "INACTIVA" },
+            { where: { usuario_id: id }, transaction: t }
+        );
+
+        await t.commit();
         res.status(200).json({
             success: true,
-            message: "Usuario eliminado permanentemente"
+            message: "Usuario y cuentas desactivados correctamente (Los datos se conservan por auditoría)"
         });
     } catch (error) {
+        await t.rollback();
         res.status(500).json({
             success: false,
-            message: "Error al eliminar el usuario",
+            message: "Error al desactivar el usuario",
             error: error.message
         });
     }

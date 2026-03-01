@@ -1,6 +1,6 @@
 // index.js
 import dotenv from 'dotenv';
-import { initServer } from './configs/app.js';
+import { initServer } from './configs/app-admin.js';
 
 dotenv.config();
 

@@ -2,7 +2,8 @@
 
 import { DataTypes } from "sequelize";
 import { db } from "../../configs/db.js";
-import { Role } from "../roles/roles.model.js"; //Modelo de roles
+import { Role } from "../roles/roles.model.js";
+import { Account } from "../accounts/accounts.model.js";
 
 export const User = db.define('user', {
     id: {
@@ -17,6 +18,10 @@ export const User = db.define('user', {
     apellido: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    username: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
     email: {
         type: DataTypes.STRING,
@@ -49,6 +54,14 @@ export const User = db.define('user', {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
     role_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -65,3 +78,5 @@ export const User = db.define('user', {
 Role.hasMany(User, { foreignKey: 'role_id' });
 // Un Usuario pertenece a un Rol
 User.belongsTo(Role, { foreignKey: 'role_id' });
+User.hasMany(Account, { foreignKey: 'usuario_id' });
+Account.belongsTo(User, { foreignKey: 'usuario_id' });

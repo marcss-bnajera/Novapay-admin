@@ -25,11 +25,11 @@ export const getAccounts = async (req, res) => {
 
 // Obtener cuenta por ID (GET) 
 // la pk debe ser el no de cuenta
-// este deberia ser por numero de cuenta y se deberia de crear en automatico y aleatorio con 12 numeros de longitud
-export const getAccountById = async (req, res) => {
+// este deberia ser por numero de cuenta y se deberia de crear en automatico y aleatorio con 10 numeros de longitud
+export const getAccountByNumber = async (req, res) => {
     try {
-        const { id } = req.params;
-        const account = await Account.findByPk(id);
+        const { numero_cuenta } = req.params;
+        const account = await Account.findOne({ where: { numero_cuenta } });
 
         if (!account) {
             return res.status(404).json({
@@ -55,12 +55,12 @@ export const getAccountById = async (req, res) => {
 // Actualizar (PUT)
 export const updateAccount = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { numero_cuenta } = req.params;
         const { nombre_cuenta, tipo_cuenta, estado, balance } = req.body;
 
         const { updateRows } = await Account.update(
             { nombre_cuenta, tipo_cuenta, estado, balance },
-            { where: { id } }
+            { where: { numero_cuenta } }
         );
 
         if (updateRows === 0) {
@@ -86,10 +86,10 @@ export const updateAccount = async (req, res) => {
 // Eliminar (DELETE)
 export const deleteAccount = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { numero_cuenta } = req.params;
 
         const deleteRows = await Account.destroy({
-            where: { id }
+            where: { numero_cuenta }
         });
 
         if (deleteRows === 0) {

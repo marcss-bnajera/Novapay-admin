@@ -1,7 +1,6 @@
-`use strict`
-
 import { Router } from "express";
 import {
+    saveUser,
     getUsers,
     getUserById,
     updateUser,
@@ -10,10 +9,11 @@ import {
 
 const router = Router();
 
-// Rutas de administrador
-router.get('/', getUsers);
-router.get('/:id', getUserById);
-router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+//rutas para el Admin
+router.post("/save", saveUser);         // Crear cliente y cuenta
+router.get("/", getUsers);             // Listar todos
+router.get("/:id", getUserById);       // Ver uno solo
+router.put("/update/:id", updateUser); // Actualizar datos
+router.delete("/delete/:id", deleteUser); // Desactivación lógica
 
 export default router;

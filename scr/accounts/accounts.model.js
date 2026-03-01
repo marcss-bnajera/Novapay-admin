@@ -1,8 +1,7 @@
 `use strict`
 
 import { DataTypes } from "sequelize";
-import { db } from "../../configs/db.js"
-import { User } from "../users/users.model.js";
+import { db } from "../../configs/db.js";
 
 export const Account = db.define('account', {
     id: {
@@ -11,7 +10,7 @@ export const Account = db.define('account', {
         autoIncrement: true,
     },
     numero_cuenta: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(12),
         allowNull: false,
         unique: true
     },
@@ -41,7 +40,8 @@ export const Account = db.define('account', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: User,
+
+            model: 'users',
             key: 'id'
         }
     }
