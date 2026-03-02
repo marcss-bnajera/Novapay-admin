@@ -1,4 +1,6 @@
-import Router from "express";
+'use strict';
+
+import { Router } from "express";
 import {
     getProducts,
     getProductById,
@@ -9,6 +11,7 @@ import {
 
 const router = Router();
 
+// Rutas para la gestión de productos
 router.get("/", getProducts);
 router.get("/:id", getProductById);
 router.post("/", createProduct);

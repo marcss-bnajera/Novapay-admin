@@ -3,11 +3,13 @@ import {
     getShoppings,
     getShoppingById,
     updateShopping,
-    deleteShopping
+    deleteShopping,
+    saveShopping
 } from "./shoppings.controller.js";
 
 const router = Router();
 
+router.post("/", saveShopping);
 router.get("/", getShoppings);
 router.get("/:id", getShoppingById);
 router.put("/:id", updateShopping);

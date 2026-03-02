@@ -2,9 +2,7 @@
 
 import { Product } from "./products.model.js";
 
-// Funciones de administrador
-
-// Obtener todos los productos (GET)
+// Obtener todos los productos (GET) - El admin ve TODO
 export const getProducts = async (req, res) => {
     try {
         const products = await Product.findAll();
@@ -44,20 +42,34 @@ export const getProductById = async (req, res) => {
             success: false,
             message: "Error al buscar el producto",
             error: error.message
-        })
+        });
     }
-}
+};
 
-// Crear producto (POST)
+// Crear producto (POST) - Incluye validación de precio y categoría
 export const createProduct = async (req, res) => {
     try {
-        const { name, description, price, state } = req.body;
+        const { name, description, category, price, state } = req.body;
 
-        const product = await Product.create({ name, description, price, state });
+        if (price <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "El precio debe ser un monto positivo"
+            });
+        }
+
+        const product = await Product.create({
+            name,
+            description,
+            category,
+            price,
+            state
+        });
 
         res.status(201).json({
             success: true,
-            message: "Producto creado"
+            message: "Producto creado exitosamente",
+            product
         });
     } catch (error) {
         res.status(500).json({
@@ -72,24 +84,23 @@ export const createProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, price, state } = req.body;
+        const { name, description, category, price, state } = req.body;
 
-        //Actualizamos
-        const { updateRows } = await Product.update(
-            { name, description, price, state },
-            { where: { id } }
-        );
-
-        if (updateRows === 0) {
+        const product = await Product.findByPk(id);
+        if (!product) {
             return res.status(404).json({
                 success: false,
-                message: "Producto no encontrado o no hubo cambios"
+                message: "Producto no encontrado"
             });
         }
 
+        // Actualización manual para asegurar que se procesen los cambios
+        await product.update({ name, description, category, price, state });
+
         res.status(200).json({
             success: true,
-            message: "Producto actualizado exitosamente"
+            message: "Producto actualizado exitosamente",
+            product
         });
     } catch (error) {
         res.status(500).json({
@@ -100,31 +111,31 @@ export const updateProduct = async (req, res) => {
     }
 };
 
-// Eliminar producto (DELETE)
+// "Eliminar" producto (DELETE) -> Rediseñado a Soft Delete
 export const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const deleteRows = await Product.destroy({
-            where: { id }
-        });
+        const product = await Product.findByPk(id);
 
-        if (deleteRows === 0) {
+        if (!product) {
             return res.status(404).json({
                 success: false,
                 message: "Producto no encontrado"
             });
         }
 
+        await product.update({ state: 'DISCONTINUED' });
+
         res.status(200).json({
             success: true,
-            message: "Producto eliminado permanentemente"
+            message: "El producto ha sido marcado como DISCONTINUED (Eliminación lógica)"
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Error al eliminar el producto",
+            message: "Error al procesar la baja del producto",
             error: error.message
         });
     }
-}
+};
