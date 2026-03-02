@@ -33,8 +33,24 @@ export const Shopping = db.define("shopping", {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         allowNull: false
+    },
+
+    estado: {
+        type: DataTypes.ENUM('COMPLETADO', 'ANULADO'),
+        allowNull: false,
+        defaultValue: 'COMPLETADO'
+    },
+    motivo_anulacion: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     timestamps: true,
     tableName: "shoppings"
 });
+
+
+Account.hasMany(Shopping, { foreignKey: 'cuenta_id' });
+Shopping.belongsTo(Account, { foreignKey: 'cuenta_id' });
+Product.hasMany(Shopping, { foreignKey: 'producto_id' });
+Shopping.belongsTo(Product, { foreignKey: 'producto_id' });

@@ -18,9 +18,17 @@ export const Product = db.define('product', {
         type: DataTypes.TEXT,
         allowNull: false
     },
+    category: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'General'
+    },
     price: {
         type: DataTypes.DECIMAL(12, 2),
-        allowNull: false
+        allowNull: false,
+        validate: {
+            min: 0.01
+        }
     },
     state: {
         type: DataTypes.ENUM('ACTIVE', 'INACTIVE', 'DISCONTINUED', 'PENDING'),
@@ -30,4 +38,4 @@ export const Product = db.define('product', {
 }, {
     timestamps: true,
     tableName: 'products',
-})
+});
