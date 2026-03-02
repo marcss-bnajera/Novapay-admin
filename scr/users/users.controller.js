@@ -2,6 +2,7 @@
 
 import { User } from "./users.model.js";
 import { Account } from "../accounts/accounts.model.js";
+import { Transfer } from "../transfers/transfers.model.js";
 import { db } from "../../configs/db.js";
 import bcrypt from "bcrypt";
 
@@ -97,9 +98,29 @@ export const getUserById = async (req, res) => {
             });
         }
 
+        // Obtenemos los IDs de las cuentas del usuario para buscar sus movimientos
+        const accountIds = user.accounts.map(acc => acc.id);
+
+        // REQUERIMIENTO: Últimos 5 movimientos de Transferencias
+        const lastMovements = await Transfer.findAll({
+            where: {
+                [Op.or]: [
+                    { account_origin_id: { [Op.in]: accountIds } },
+                    { account_destination_id: { [Op.in]: accountIds } }
+                ]
+            },
+            limit: 5,
+            order: [['date', 'DESC']],
+            include: [
+                { model: Account, as: 'Origin', attributes: ['numero_cuenta'] },
+                { model: Account, as: 'Destination', attributes: ['numero_cuenta'] }
+            ]
+        });
+
         res.status(200).json({
             success: true,
-            user
+            user,
+            lastMovements
         });
     } catch (error) {
         res.status(500).json({

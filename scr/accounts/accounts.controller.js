@@ -2,6 +2,10 @@
 
 import { Account } from "./accounts.model.js"
 
+import { db } from "../../configs/db.js";
+import { Transfer } from "../transfers/transfers.model.js";
+
+
 
 // Funciones de administrador
 
@@ -20,6 +24,35 @@ export const getAccounts = async (req, res) => {
             message: "Error al obtener cuentas",
             error: error.message
         });
+    }
+};
+
+export const getAccountsByActivity = async (req, res) => {
+    try {
+        const { order = 'DESC' } = req.query;
+
+        const activity = await Transfer.findAll({
+            attributes: [
+                'account_origin_id',
+                [db.fn('COUNT', db.col('account_origin_id')), 'total_movimientos']
+            ],
+            include: [{
+                model: Account,
+                as: 'Origin',
+                attributes: ['id', 'numero_cuenta', 'nombre_cuenta']
+            }],
+            group: [
+                'transfer.account_origin_id',
+                'Origin.id',
+                'Origin.numero_cuenta',
+                'Origin.nombre_cuenta'
+            ],
+            order: [[db.literal('total_movimientos'), order]],
+        });
+
+        res.status(200).json({ success: true, activity });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
     }
 };
 

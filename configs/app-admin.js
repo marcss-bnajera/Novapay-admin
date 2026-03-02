@@ -17,6 +17,7 @@ import rolesRoutes from '../scr/roles/roles.routes.js';
 import usersRoutes from '../scr/users/users.routes.js';
 import accountsRoutes from '../scr/accounts/accounts.routes.js';
 import deposits from '../scr/deposits/deposits.routes.js'
+import transfersRoutes from '../scr/transfers/transfers.routes.js';
 
 // Función para crear datos iniciales (Roles y Admin por defecto)
 const initData = async () => {
@@ -65,6 +66,7 @@ const setupRoutes = (app) => {
     app.use(`${BASE_URL}/users`, usersRoutes);
     app.use(`${BASE_URL}/accounts`, accountsRoutes);
     app.use(`${BASE_URL}/deposits`, deposits);
+    app.use(`${BASE_URL}/transfers`, transfersRoutes);
     app.get(`${BASE_URL}/check`, (req, res) => {
         res.status(200).json({ message: 'NovaPay Admin Server is up and running' });
     });
