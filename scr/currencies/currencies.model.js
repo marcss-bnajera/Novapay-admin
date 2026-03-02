@@ -1,7 +1,7 @@
 `use strict`
 
 import { DataTypes } from "sequelize";
-import { db } from "../../configs/db.js"
+import { db } from "../../configs/db.js";
 
 export const Currency = db.define('currency', {
     id: {

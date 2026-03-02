@@ -1,4 +1,4 @@
-`use strict`;
+'use strict';
 
 import express from 'express';
 import cors from 'cors';
@@ -8,7 +8,7 @@ import bcrypt from 'bcrypt';
 import { dbConnection } from './db.js';
 import { corsOption } from './cors-configuration.js';
 
-// --- Modelos para tener roles y adminB ---
+// --- Modelos para tener roles y admin por defecto ---
 import { Role } from '../scr/roles/roles.model.js';
 import { User } from '../scr/users/users.model.js';
 
@@ -16,8 +16,9 @@ import { User } from '../scr/users/users.model.js';
 import rolesRoutes from '../scr/roles/roles.routes.js';
 import usersRoutes from '../scr/users/users.routes.js';
 import accountsRoutes from '../scr/accounts/accounts.routes.js';
-import deposits from '../scr/deposits/deposits.routes.js'
+import deposits from '../scr/deposits/deposits.routes.js';
 import transfersRoutes from '../scr/transfers/transfers.routes.js';
+import currenciesRoutes from '../scr/currencies/currencies.routes.js';
 
 // Función para crear datos iniciales (Roles y Admin por defecto)
 const initData = async () => {
@@ -67,6 +68,8 @@ const setupRoutes = (app) => {
     app.use(`${BASE_URL}/accounts`, accountsRoutes);
     app.use(`${BASE_URL}/deposits`, deposits);
     app.use(`${BASE_URL}/transfers`, transfersRoutes);
+    app.use(`${BASE_URL}/currencies`, currenciesRoutes);
+
     app.get(`${BASE_URL}/check`, (req, res) => {
         res.status(200).json({ message: 'NovaPay Admin Server is up and running' });
     });
@@ -75,13 +78,13 @@ const setupRoutes = (app) => {
 // Inicialización del servidor
 export const initServer = async () => {
     const app = express();
-    const PORT = process.env.PORT || 3001;
+    const PORT = process.env.PORT || 3003;
 
     try {
         // 1. Conexión a la base de datos
         await dbConnection();
 
-        // 2. Crear datos maestros (AdminB y Roles)
+        // 2. Crear datos maestros (Admin y Roles)
         await initData();
 
         // 3. Middlewares y Rutas
