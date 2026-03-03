@@ -6,13 +6,14 @@ import {
     updateRole,
     deleteRole
 } from "./roles.controller.js";
+import { validateCreateRole, validateUpdateRole, validateRoleId } from '../../middlewares/roles-validator.js'
 
 const router = Router();
 
 router.get('/', getRoles);
-router.get('/:id', getRoleById);
-router.post('/', createRole);
-router.put('/:id', updateRole);
+router.get('/:id', getRoleById, validateRoleId);
+router.post('/', createRole, validateCreateRole);
+router.put('/:id', updateRole, validateUpdateRole);
 router.delete('/:id', deleteRole);
 
 export default router;

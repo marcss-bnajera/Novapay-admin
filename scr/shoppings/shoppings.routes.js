@@ -7,14 +7,15 @@ import {
     saveShopping,
     getLatestMovements
 } from "./shoppings.controller.js";
+import { validateSaveShopping, validateUpdateShopping, validateGetLatestMovements, validateDeleteShopping } from '../../middlewares/shopping-validator.js'
 
 const router = Router();
 
-router.post("/", saveShopping);
+router.post("/", saveShopping, validateSaveShopping);
 router.get("/", getShoppings);
-router.get("/latest/:cuenta_id", getLatestMovements);
+router.get("/latest/:cuenta_id", getLatestMovements, validateGetLatestMovements);
 router.get("/:id", getShoppingById);
-router.put("/:id", updateShopping);
-router.delete("/:id", deleteShopping);
+router.put("/:id", updateShopping, validateUpdateShopping);
+router.delete("/:id", deleteShopping, validateDeleteShopping);
 
 export default router;

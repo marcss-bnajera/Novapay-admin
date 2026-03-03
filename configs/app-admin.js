@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import bcrypt from 'bcrypt';
 import { dbConnection } from './db.js';
 import { corsOption } from './cors-configuration.js';
+import { requestLimit } from '../middlewares/request-limit.js'
 
 // --- Modelos para tener roles y admin por defecto ---
 import { Role } from '../scr/roles/roles.model.js';
@@ -58,9 +59,10 @@ const initData = async () => {
 const setupMiddlewares = (app) => {
     app.use(helmet());
     app.use(cors(corsOption));
-    app.use(morgan('dev'));
     app.use(express.json({ limit: '10mb' }));
+    app.use(requestLimit);
     app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+    app.use(morgan('dev'));
 };
 
 const setupRoutes = (app) => {
