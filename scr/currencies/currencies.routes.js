@@ -7,12 +7,13 @@ import {
     updateCurrency,
     deleteCurrency
 } from "./currencies.controller.js";
+import { validateCreateCurrency, validateUpdateCurrency, validateDeleteCurrency } from '../../middlewares/currencies-validator.js'
 
 const router = Router();
 
 router.get('/', getCurrencies);
-router.post('/', createCurrency);
-router.put('/:id', updateCurrency);
-router.delete('/:id', deleteCurrency);
+router.post('/', createCurrency, validateCreateCurrency);
+router.put('/:id', updateCurrency, validateUpdateCurrency);
+router.delete('/:id', deleteCurrency, validateDeleteCurrency);
 
 export default router;

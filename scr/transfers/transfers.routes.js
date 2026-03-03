@@ -5,6 +5,7 @@ import {
     getAllTransfers,
     getTransfersByAccount
 } from "./transfers.controller.js";
+import { validateGetTransfersByAccount } from '../../middlewares/transfres-validator.js'
 
 const router = Router();
 
@@ -12,6 +13,6 @@ const router = Router();
 router.get("/all", getAllTransfers);
 
 // Endpoint para buscar movimientos de una cuenta específica
-router.get("/accounts/:id_cuenta", getTransfersByAccount);
+router.get("/accounts/:id_cuenta", getTransfersByAccount, validateGetTransfersByAccount);
 
 export default router;
