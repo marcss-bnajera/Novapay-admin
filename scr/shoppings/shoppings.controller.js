@@ -5,7 +5,8 @@ import { Account } from "../accounts/accounts.model.js";
 import { Product } from "../products/products.model.js";
 import { db } from "../../configs/db.js";
 
-// Obtener todas las compras (GET)
+
+//GET Listado de compras
 export const getShoppings = async (req, res) => {
     try {
         const shoppings = await Shopping.findAll({
@@ -28,7 +29,7 @@ export const getShoppings = async (req, res) => {
     }
 };
 
-// Obtener una compra por ID (GET)
+//GET Buscar una compra por su id
 export const getShoppingById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -58,7 +59,8 @@ export const getShoppingById = async (req, res) => {
         });
     }
 };
-// Agregar un nuevo Shopping (POST) - Para pruebas del Admin
+
+//POST Crear un registro manual
 export const saveShopping = async (req, res) => {
     try {
         const { cuenta_id, producto_id, monto } = req.body;
@@ -83,46 +85,67 @@ export const saveShopping = async (req, res) => {
         });
     }
 };
-// Actualizar (PUT)
+
+// --- MEJORAS Y NUEVOS REQUERIMIENTOS ---
+
+// PUT / PATCH Editar datos o Anular devolviendo dinero
 export const updateShopping = async (req, res) => {
+    const t = await db.transaction();
     try {
         const { id } = req.params;
-        const { cuenta_id, producto_id, monto, fecha, estado, motivo_anulacion } = req.body;
+        const { estado, motivo_anulacion } = req.body;
 
         const shopping = await Shopping.findByPk(id);
-
         if (!shopping) {
-            return res.status(404).json({
-                success: false,
-                message: "Compra no encontrada"
-            });
+            await t.rollback();
+            return res.status(404).json({ success: false, message: "Compra no encontrada" });
         }
 
-        await shopping.update({
-            cuenta_id,
-            producto_id,
-            monto,
-            fecha,
-            estado,
-            motivo_anulacion
+
+        if (estado === 'ANULADO' && shopping.estado !== 'ANULADO') {
+            const account = await Account.findByPk(shopping.cuenta_id);
+            if (account) {
+                const nuevoBalance = parseFloat(account.balance) + parseFloat(shopping.monto);
+                await account.update({ balance: nuevoBalance }, { transaction: t });
+            }
+        }
+
+        await shopping.update(req.body, { transaction: t });
+        await t.commit();
+
+        res.status(200).json({
+            success: true,
+            message: "Compra gestionada exitosamente",
+            shopping
+        });
+    } catch (error) {
+        if (t) await t.rollback();
+        res.status(500).json({ success: false, message: "Error en la gestión", error: error.message });
+    }
+};
+
+//GET Ver los ultimos 5 movimientos de una cuenta
+export const getLatestMovements = async (req, res) => {
+    try {
+        const { cuenta_id } = req.params;
+        const movements = await Shopping.findAll({
+            where: { cuenta_id },
+            limit: 5,
+            order: [['createdAt', 'DESC']],
+            include: [{ model: Product, attributes: ['name'] }]
         });
 
         res.status(200).json({
             success: true,
-            message: "Compra actualizada exitosamente",
-            shopping
+            count: movements.length,
+            history: movements
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al actualizar la compra",
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: "Error al obtener historial", error: error.message });
     }
 };
 
-// Eliminar (DELETE) -> Convertido a ANULACIÓN CON REEMBOLSO
-// Seguimos la lógica de depósitos: usamos transacciones para devolver el dinero
+//DELETE Eliminar una compra con rembolso
 export const deleteShopping = async (req, res) => {
     const t = await db.transaction();
     try {
@@ -131,37 +154,15 @@ export const deleteShopping = async (req, res) => {
 
         const shopping = await Shopping.findByPk(id);
 
-        if (!shopping) {
+        if (!shopping || shopping.estado === 'ANULADO') {
             await t.rollback();
-            return res.status(404).json({
-                success: false,
-                message: "Compra no encontrada"
-            });
+            return res.status(400).json({ success: false, message: "Compra no encontrada o ya anulada" });
         }
-
-        if (shopping.estado === 'ANULADO') {
-            await t.rollback();
-            return res.status(400).json({
-                success: false,
-                message: "Esta compra ya ha sido anulada previamente"
-            });
-        }
-
 
         const account = await Account.findByPk(shopping.cuenta_id);
-        if (!account) {
-            await t.rollback();
-            return res.status(404).json({
-                success: false,
-                message: "Cuenta asociada a la compra no encontrada"
-            });
-        }
-
-
         const nuevoBalance = parseFloat(account.balance) + parseFloat(shopping.monto);
+
         await account.update({ balance: nuevoBalance }, { transaction: t });
-
-
         await shopping.update({
             estado: 'ANULADO',
             motivo_anulacion: motivo || "Anulado por el Administrador"
@@ -171,18 +172,11 @@ export const deleteShopping = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Compra anulada y monto reembolsado exitosamente",
-            detalle: {
-                monto_devuelto: shopping.monto,
-                nuevo_balance_cuenta: nuevoBalance
-            }
+            message: "Compra anulada y reembolso aplicado",
+            nuevo_balance: nuevoBalance
         });
     } catch (error) {
-        await t.rollback();
-        res.status(500).json({
-            success: false,
-            message: "Error al procesar la anulación de la compra",
-            error: error.message
-        });
+        if (t) await t.rollback();
+        res.status(500).json({ success: false, error: error.message });
     }
 };
