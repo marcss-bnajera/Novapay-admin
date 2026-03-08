@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
     saveUser,
+    addExtraAccount,
     getUsers,
     getUserById,
     updateUser,
@@ -11,10 +12,11 @@ import { validateSaveUser, validateUpdateUser, validateUserId } from '../../midd
 const router = Router();
 
 //rutas para el Admin
-router.post("/save", saveUser, validateSaveUser);         // Crear cliente y cuenta
+router.post("/save", validateSaveUser, saveUser);         // Crear cliente y cuenta
+router.post("/addaccount", addExtraAccount);     //Crearle otra cuenta al usuario
 router.get("/", getUsers);             // Listar todos
-router.get("/:id", getUserById, validateUserId);       // Ver uno solo
-router.put("/update/:id", updateUser, validateUpdateUser); // Actualizar datos
+router.get("/:id", validateUserId, getUserById);       // Ver uno solo
+router.put("/update/:id", validateUpdateUser, updateUser); // Actualizar datos
 router.delete("/delete/:id", deleteUser); // Desactivación lógica
 
 export default router;

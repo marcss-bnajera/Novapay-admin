@@ -88,7 +88,7 @@ const setupRoutes = (app) => {
 // Inicialización del servidor
 export const initServer = async () => {
     const app = express();
-    const PORT = process.env.PORT || 3003;
+    const PORT = process.env.PORT || 3001;
 
     try {
         // 1. Conexión a la base de datos

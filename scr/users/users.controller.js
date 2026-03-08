@@ -197,3 +197,44 @@ export const deleteUser = async (req, res) => {
         });
     }
 };
+
+// 6. Agregar una cuenta adicional a un usuario existente
+export const addExtraAccount = async (req, res) => {
+    try {
+        const { usuario_id, tipo_cuenta } = req.body;
+
+        // 1. Verificar si el usuario existe
+        const user = await User.findByPk(usuario_id);
+        if (!user || !user.active) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado o inactivo."
+            });
+        }
+
+        // 2. Generar No. Cuenta aleatorio único
+        const randomAccountNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+
+        // 3. Crear la nueva cuenta vinculada al ID del usuario
+        const newAccount = await Account.create({
+            numero_cuenta: randomAccountNumber,
+            nombre_cuenta: `Cuenta - ${user.nombre} ${user.apellido}`,
+            tipo_cuenta: tipo_cuenta || "AHORRO",
+            balance: 0.00,
+            usuario_id: user.id // Aquí es donde se hace el vínculo
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Nueva cuenta asignada al cliente correctamente",
+            account: newAccount
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al agregar la cuenta adicional",
+            error: error.message
+        });
+    }
+};
