@@ -2,6 +2,7 @@
 
 import { Transfer } from "./transfers.model.js";
 import { Account } from "../accounts/accounts.model.js";
+import { Op } from "sequelize";
 
 // Obtener todas las transferencias del sistema
 export const getAllTransfers = async (req, res) => {

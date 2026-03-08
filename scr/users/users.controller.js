@@ -5,6 +5,7 @@ import { Account } from "../accounts/accounts.model.js";
 import { Transfer } from "../transfers/transfers.model.js";
 import { db } from "../../configs/db.js";
 import bcrypt from "bcrypt";
+import { Op } from "sequelize";
 
 
 // 1. Agregar un nuevo Cliente 
