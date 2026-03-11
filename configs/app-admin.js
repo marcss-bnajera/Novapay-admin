@@ -23,6 +23,8 @@ import currenciesRoutes from '../scr/currencies/currencies.routes.js';
 import productsRoutes from '../scr/products/products.routes.js';
 import shoppingRoutes from '../scr/shoppings/shoppings.routes.js';
 import transactionsRoutes from '../scr/transactions/transactions.routes.js';
+import cardsRoutes from '../scr/cards/cards.routes.js';
+import passbooksRoutes from '../scr/passbooks/passbooks.routes.js';
 
 
 // Función para crear datos iniciales (Roles y Admin por defecto)
@@ -75,6 +77,8 @@ const setupRoutes = (app) => {
     app.use(`${BASE_URL}/deposits`, deposits);
     app.use(`${BASE_URL}/transactions`, transactionsRoutes);
     app.use(`${BASE_URL}/transfers`, transfersRoutes);
+    app.use(`${BASE_URL}/cards`, cardsRoutes);
+    app.use(`${BASE_URL}/passbooks`, passbooksRoutes);
     app.use(`${BASE_URL}/currencies`, currenciesRoutes);
     app.use(`${BASE_URL}/products`, productsRoutes);
     app.use(`${BASE_URL}/shoppings`, shoppingRoutes);
