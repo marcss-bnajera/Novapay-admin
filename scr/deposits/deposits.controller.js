@@ -5,6 +5,18 @@ import { Account } from "../accounts/accounts.model.js";
 import { Transaction } from "../transactions/transactions.model.js";
 import { db } from "../../configs/db.js";
 
+export const getDeposits = async (req, res) => {
+    try {
+        const deposits = await Deposit.findAll({
+            include: [{ model: Account, attributes: ['numero_cuenta', 'nombre_cuenta'] }],
+            order: [['createdAt', 'DESC']]
+        });
+        res.status(200).json({ success: true, total: deposits.length, deposits });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error al obtener depósitos", error: error.message });
+    }
+};
+
 export const makeDeposit = async (req, res) => {
 
     const t = await db.transaction();

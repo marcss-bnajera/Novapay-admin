@@ -2,6 +2,7 @@
 
 import { User } from "./users.model.js";
 import { Account } from "../accounts/accounts.model.js";
+import { Role } from "../roles/roles.model.js";
 import { Transfer } from "../transfers/transfers.model.js";
 import { db } from "../../configs/db.js";
 import bcrypt from "bcrypt";
@@ -68,7 +69,7 @@ export const getUsers = async (req, res) => {
         // Incluimos la cuenta para ver el saldo como pide el requerimiento
         const users = await User.findAll({
             where: { active: true },
-            include: [{ model: Account }]
+            include: [{ model: Account }, { model: Role, attributes: ['id', 'name'] }]
         });
         res.status(200).json({
             success: true,
@@ -136,7 +137,7 @@ export const getUserById = async (req, res) => {
 export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { dpi, password, role_id, active, username, ...restOfData } = req.body; // Extraemos para ignorarlos
+        const { dpi, password, active, username, ...restOfData } = req.body; // dpi/password/active/username no se actualizan por esta ruta
 
         const [affectedCount] = await User.update(restOfData, {
             where: { id }

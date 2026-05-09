@@ -1,11 +1,9 @@
 import { Router } from "express";
-import {
-    makeDeposit
-} from "./deposits.controller.js";
+import { makeDeposit, getDeposits } from "./deposits.controller.js";
 import { validateMakeDeposit } from '../../middlewares/depostis-validator.js'
 const router = Router();
 
-
-router.post("/deposit", makeDeposit, validateMakeDeposit);
+router.get("/", getDeposits);
+router.post("/deposit", validateMakeDeposit, makeDeposit);
 
 export default router;

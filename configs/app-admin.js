@@ -31,8 +31,8 @@ import passbooksRoutes from '../scr/passbooks/passbooks.routes.js';
 const initData = async () => {
     try {
         // 1. Crear Roles si no existen
-        const [adminRole] = await Role.findOrCreate({ where: { name: 'ADMIN' } });
-        await Role.findOrCreate({ where: { name: 'CLIENT' } });
+        const [adminRole] = await Role.findOrCreate({ where: { name: 'Administrador' } });
+        await Role.findOrCreate({ where: { name: 'Cliente' } });
 
         // 2. Crear ADMINB si no existe
         const adminExists = await User.findOne({ where: { username: 'ADMINB' } });

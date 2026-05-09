@@ -62,27 +62,41 @@ export const getShoppingById = async (req, res) => {
 
 //POST Crear un registro manual
 export const saveShopping = async (req, res) => {
+    const t = await db.transaction();
     try {
-        const { cuenta_id, producto_id, monto } = req.body;
+        const { numero_cuenta, producto_id } = req.body;
+
+        const account = await Account.findOne({ where: { numero_cuenta }, transaction: t });
+        if (!account) {
+            await t.rollback();
+            return res.status(404).json({ success: false, message: "Cuenta no encontrada" });
+        }
+
+        const product = await Product.findByPk(producto_id, { transaction: t });
+        if (!product) {
+            await t.rollback();
+            return res.status(404).json({ success: false, message: "Producto no encontrado" });
+        }
+
+        if (parseFloat(account.balance) < parseFloat(product.price)) {
+            await t.rollback();
+            return res.status(400).json({ success: false, message: "Saldo insuficiente" });
+        }
 
         const newShopping = await Shopping.create({
-            cuenta_id,
+            cuenta_id: account.id,
             producto_id,
-            monto,
+            monto: product.price,
             estado: 'COMPLETADO'
-        });
+        }, { transaction: t });
 
-        res.status(201).json({
-            success: true,
-            message: "Compra registrada exitosamente",
-            newShopping
-        });
+        await account.update({ balance: parseFloat(account.balance) - parseFloat(product.price) }, { transaction: t });
+        await t.commit();
+
+        res.status(201).json({ success: true, message: "Compra registrada exitosamente", newShopping });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al registrar la compra",
-            error: error.message
-        });
+        await t.rollback();
+        res.status(500).json({ success: false, message: "Error al registrar la compra", error: error.message });
     }
 };
 
