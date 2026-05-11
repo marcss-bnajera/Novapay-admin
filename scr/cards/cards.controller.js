@@ -52,7 +52,12 @@ export const createCard = async (req, res) => {
         return res.status(201).json({ success: true, message: "Tarjeta creada correctamente", card });
 
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Error creating card", error: error.message });
+        console.log("DETALLE DEL ERROR:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error creating card",
+            error: error.errors ? error.errors.map(e => e.message) : error.message
+        });
     }
 };
 
@@ -86,5 +91,22 @@ export const deleteCard = async (req, res) => {
         return res.status(200).json({ success: true, message: "Tarjeta eliminada" });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Error deleting card", error: error.message });
+    }
+};
+
+export const updateCard = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { estado } = req.body;
+
+        const card = await Card.findByPk(id);
+        if (!card) return res.status(404).json({ success: false, message: "Tarjeta no encontrada" });
+
+        card.estado = estado;
+        await card.save();
+
+        return res.status(200).json({ success: true, message: "Estado actualizado", card });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Error al actualizar", error: error.message });
     }
 };
