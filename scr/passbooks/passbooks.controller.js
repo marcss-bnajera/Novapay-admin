@@ -12,8 +12,10 @@ const generatePassbookNumber = () => {
 export const createPassbook = async (req, res) => {
     try {
         const { numero_cuenta } = req.body;
+        console.log("Intentando buscar cuenta:", numero_cuenta);
 
         const account = await Account.findOne({ where: { numero_cuenta } });
+
         if (!account) {
             return res.status(404).json({ success: false, message: "Cuenta no encontrada" });
         }
@@ -23,10 +25,22 @@ export const createPassbook = async (req, res) => {
             account_id: account.id
         });
 
-        return res.status(201).json({ success: true, message: "Libreta creada correctamente", passbook });
+        const fullPassbook = await Passbook.findByPk(passbook.id, {
+            include: [{ model: Account, attributes: ['numero_cuenta'] }]
+        });
+
+        return res.status(201).json({
+            success: true,
+            passbook: fullPassbook
+        });
 
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Error creating passbook", error: error.message });
+        console.error("DETALLE DEL ERROR 500:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error en el servidor",
+            details: error.message
+        });
     }
 };
 

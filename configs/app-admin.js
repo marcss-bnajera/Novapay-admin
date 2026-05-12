@@ -12,6 +12,9 @@ import { requestLimit } from '../middlewares/request-limit.js'
 // --- Modelos para tener roles y admin por defecto ---
 import { Role } from '../scr/roles/roles.model.js';
 import { User } from '../scr/users/users.model.js';
+import { Account } from '../scr/accounts/accounts.model.js';
+import { Card } from '../scr/cards/cards.model.js';
+import { Passbook } from '../scr/passbooks/passbooks.model.js';
 
 // --- IMPORTAR RUTAS ---
 import rolesRoutes from '../scr/roles/roles.routes.js';
@@ -97,6 +100,15 @@ export const initServer = async () => {
     try {
         // 1. Conexión a la base de datos
         await dbConnection();
+
+        // Definicion de relaciones
+        // Relacion Cuentas con Tarjetas
+        Account.hasMany(Card, { foreignKey: 'account_id' });
+        Card.belongsTo(Account, { foreignKey: 'account_id' });
+
+        // Relación Cuentas con Libretas
+        Account.hasMany(Passbook, { foreignKey: 'account_id' });
+        Passbook.belongsTo(Account, { foreignKey: 'account_id' });
 
         // 2. Crear datos maestros (Admin y Roles)
         await initData();
