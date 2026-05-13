@@ -169,16 +169,32 @@ export const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // 1. Desactivamos al Usuario
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(id, {
+            include: [{ model: Account }]
+        });
+
         if (!user) {
             await t.rollback();
             return res.status(404).json({ success: false, message: "Usuario no encontrado" });
         }
 
-        await user.update({ active: false }, { transaction: t });
+        // Verificar si alguna cuenta tiene saldo mayor a 0
+        const cuentasConSaldo = user.accounts.filter(acc => parseFloat(acc.balance) > 0);
 
-        // 2. Desactivamos TODAS sus cuentas asociadas
+        if (cuentasConSaldo.length > 0) {
+            await t.rollback();
+            return res.status(400).json({
+                success: false,
+                message: `No se puede desactivar el usuario. Tiene ${cuentasConSaldo.length} cuenta(s) con saldo activo. El cliente debe retirar o transferir el dinero antes de poder desactivar la cuenta.`,
+                cuentas: cuentasConSaldo.map(acc => ({
+                    numero_cuenta: acc.numero_cuenta,
+                    balance: acc.balance
+                }))
+            });
+        }
+
+        // Si no tiene saldo, desactivar usuario y cuentas
+        await user.update({ active: false }, { transaction: t });
         await Account.update(
             { estado: "INACTIVA" },
             { where: { usuario_id: id }, transaction: t }

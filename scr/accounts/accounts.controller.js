@@ -121,26 +121,36 @@ export const deleteAccount = async (req, res) => {
     try {
         const { numero_cuenta } = req.params;
 
-        const deleteRows = await Account.destroy({
-            where: { numero_cuenta }
-        });
+        const account = await Account.findOne({ where: { numero_cuenta } });
 
-        if (deleteRows === 0) {
+        if (!account) {
             return res.status(404).json({
                 success: false,
                 message: "Cuenta no encontrada"
             });
         }
 
+        // Verificar si tiene saldo
+        if (parseFloat(account.balance) > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `No se puede cerrar la cuenta. Tiene un saldo de Q${parseFloat(account.balance).toFixed(2)}. El cliente debe retirar o transferir el dinero antes de cerrar la cuenta.`,
+                balance: account.balance
+            });
+        }
+
+        // Si saldo es 0, cerrar la cuenta (soft delete)
+        await account.update({ estado: "INACTIVA" });
+
         res.status(200).json({
             success: true,
-            message: "Cuenta eliminada permanentemente"
+            message: "Cuenta cerrada correctamente (Los datos se conservan por auditoría)"
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Error al eliminar la cuenta",
+            message: "Error al cerrar la cuenta",
             error: error.message
         });
     }
-}
+};

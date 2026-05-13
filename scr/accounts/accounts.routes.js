@@ -16,14 +16,14 @@ const router = Router();
 router.get("/", getAccounts);
 
 //obtener la cuentas cuentas con mayor actividad
-router.get("/activity", getAccountsByActivity, validateGetAccountsActivity);
+router.get("/activity", validateGetAccountsActivity, getAccountsByActivity);
 
 // Obtener una cuenta específica por su número
-router.get("/:numero_cuenta", getAccountByNumber, validateGetAccountByNumber);
+router.get("/:numero_cuenta", validateGetAccountByNumber, getAccountByNumber);
 
 // Actualizar 
-router.put("/:numero_cuenta", updateAccount, validateUpdateAccountAdmin);
+router.put("/:numero_cuenta", validateUpdateAccountAdmin, updateAccount);
 
-router.delete("/:numero_cuenta", deleteAccount, validateDeleteAccount);
+router.delete("/:numero_cuenta", validateDeleteAccount, deleteAccount);
 
 export default router;
