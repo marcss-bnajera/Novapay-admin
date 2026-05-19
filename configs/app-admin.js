@@ -15,6 +15,7 @@ import { User } from '../scr/users/users.model.js';
 import { Account } from '../scr/accounts/accounts.model.js';
 import { Card } from '../scr/cards/cards.model.js';
 import { Passbook } from '../scr/passbooks/passbooks.model.js';
+import { Transfer } from '../scr/transfers/transfers.model.js';
 
 // --- IMPORTAR RUTAS ---
 import rolesRoutes from '../scr/roles/roles.routes.js';
@@ -28,6 +29,7 @@ import shoppingRoutes from '../scr/shoppings/shoppings.routes.js';
 import transactionsRoutes from '../scr/transactions/transactions.routes.js';
 import cardsRoutes from '../scr/cards/cards.routes.js';
 import passbooksRoutes from '../scr/passbooks/passbooks.routes.js';
+import dashboardRoutes from '../scr/dashboard/dashboard.routes.js';
 
 
 // Función para crear datos iniciales (Roles y Admin por defecto)
@@ -85,6 +87,7 @@ const setupRoutes = (app) => {
     app.use(`${BASE_URL}/currencies`, currenciesRoutes);
     app.use(`${BASE_URL}/products`, productsRoutes);
     app.use(`${BASE_URL}/shoppings`, shoppingRoutes);
+    app.use(`${BASE_URL}/dashboard`, dashboardRoutes);
 
 
     app.get(`${BASE_URL}/check`, (req, res) => {
@@ -109,6 +112,11 @@ export const initServer = async () => {
         // Relación Cuentas con Libretas
         Account.hasMany(Passbook, { foreignKey: 'account_id' });
         Passbook.belongsTo(Account, { foreignKey: 'account_id' });
+
+        // Relacion Para Dashboard
+        //  SOLUCIÓN: Alias únicos para las transferencias hechas y recibidas
+        Account.hasMany(Transfer, { as: 'SentTransfers', foreignKey: 'account_origin_id' });
+        Account.hasMany(Transfer, { as: 'ReceivedTransfers', foreignKey: 'account_destination_id' });
 
         // 2. Crear datos maestros (Admin y Roles)
         await initData();
