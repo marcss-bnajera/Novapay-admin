@@ -22,6 +22,12 @@ export const Passbook = db.define('passbook', {
         defaultValue: DataTypes.NOW
     },
 
+    tipo_libreta: {
+        type: DataTypes.ENUM('AHORRO', 'CORRIENTE', 'PLAZO_FIJO', 'INFANTIL'),
+        allowNull: false,
+        defaultValue: 'AHORRO'
+    },
+
     estado: {
         type: DataTypes.STRING,
         defaultValue: "ACTIVA"
