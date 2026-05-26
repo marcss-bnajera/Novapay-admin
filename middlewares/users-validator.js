@@ -25,10 +25,10 @@ export const validateSaveUser = [
     body('nit')
         .trim()
         .notEmpty().withMessage('El NIT es obligatorio')
-        .matches(/^[0-9Kk-]+$/).withMessage('Formato de NIT no válido'), // Permite números, guiones y la 'K' de nit centroamericano
-    body('telefono')
+        .matches(/^[0-9Kk-]+$/).withMessage('Formato de NIT no válido'),
+        body('telefono')
         .trim()
-        .isMobilePhone('es-GT').withMessage('Número de teléfono no válido para Guatemala (8 dígitos)'),
+        .matches(/^[0-9]{8}$/).withMessage('El teléfono debe tener exactamente 8 dígitos numéricos'),
     body('ingresos_mensuales')
         .isDecimal().withMessage('Los ingresos deben ser un número válido')
         .custom(value => parseFloat(value) >= 100).withMessage('Los ingresos deben ser de al menos Q100.00'),
@@ -47,7 +47,7 @@ export const validateUpdateUser = [
     body('username').optional().trim().isAlphanumeric().withMessage('El username solo puede contener letras y números'),
     body('email').optional().trim().isEmail().withMessage('Formato de email incorrecto'),
     body('nit').optional().trim().matches(/^[0-9Kk-]+$/).withMessage('Formato de NIT inválido'),
-    body('telefono').optional().trim().isMobilePhone('es-GT').withMessage('Teléfono no válido'),
+    body('telefono').optional().trim().matches(/^[0-9]{8}$/).withMessage('El teléfono debe tener exactamente 8 dígitos'),
     body('ingresos_mensuales').optional().isDecimal().custom(value => parseFloat(value) >= 100).withMessage('Mínimo Q100.00'),
     body('direccion').optional().trim().notEmpty().withMessage('La dirección no puede estar vacía'),
 
