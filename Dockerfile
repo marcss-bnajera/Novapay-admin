@@ -8,13 +8,13 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Instalamos las dependencias
-RUN npm install
+RUN npm install && mkdir -p logs
 
 # Copiamos el resto del código (incluyendo tu carpeta scr, configs, etc.)
 COPY . .
 
 # Exponemos el puerto que usa tu index.js (asumiendo que es el 3000)
-EXPOSE 3000
+EXPOSE 3001
 
 # Comando para arrancar la app
 CMD ["node", "index.js"]
