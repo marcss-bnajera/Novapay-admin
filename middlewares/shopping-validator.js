@@ -3,17 +3,11 @@ import { checkValidators } from './check-validators.js';
 
 // 1. Validar creación manual (POST)
 export const validateSaveShopping = [
-    body('cuenta_id')
-        .isInt().withMessage('El ID de la cuenta debe ser un número entero'),
+    body('numero_cuenta')
+        .notEmpty().withMessage('El número de cuenta es obligatorio'),
 
     body('producto_id')
         .isInt().withMessage('El ID del producto debe ser un número entero'),
-
-    body('monto')
-        .isDecimal({ decimal_digits: '0,2' })
-        .withMessage('El monto debe ser un número decimal válido')
-        .custom(value => parseFloat(value) > 0)
-        .withMessage('El monto debe ser mayor a 0'),
 
     checkValidators
 ];
@@ -50,6 +44,7 @@ export const validateGetLatestMovements = [
 export const validateDeleteShopping = [
     param('id').isInt().withMessage('ID no válido'),
     body('motivo')
-        .notEmpty().withMessage('El motivo de la eliminación es obligatorio para auditoría'),
+        .optional()
+        .notEmpty().withMessage('El motivo no puede estar vacío'),
     checkValidators
 ];

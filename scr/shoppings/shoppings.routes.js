@@ -11,11 +11,11 @@ import { validateSaveShopping, validateUpdateShopping, validateGetLatestMovement
 
 const router = Router();
 
-router.post("/", saveShopping, validateSaveShopping);
+router.post("/", validateSaveShopping, saveShopping);
 router.get("/", getShoppings);
-router.get("/latest/:cuenta_id", getLatestMovements, validateGetLatestMovements);
+router.get("/latest/:cuenta_id", validateGetLatestMovements, getLatestMovements);
 router.get("/:id", getShoppingById);
-router.put("/:id", updateShopping, validateUpdateShopping);
-router.delete("/:id", deleteShopping, validateDeleteShopping);
+router.put("/:id", validateUpdateShopping, updateShopping);
+router.delete("/:id", validateDeleteShopping, deleteShopping);
 
 export default router;
