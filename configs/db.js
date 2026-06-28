@@ -45,6 +45,18 @@ export const dbConnection = async () => {
         */
         await db.sync({ alter: true });
         logger.info('PostgreeSQL | Database synchronized and tables cheked.');
+
+        await db.query(`
+            DO $$ BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'cards' AND column_name = 'tipo_tarjeta'
+                ) THEN
+                    ALTER TABLE cards ADD COLUMN tipo_tarjeta VARCHAR NOT NULL DEFAULT 'DEBITO';
+                END IF;
+            END $$;
+        `);
+        logger.info('PostgreeSQL | Cards table columns verified.');
     } catch (error) {
         logger.error('PostgreSQL | Connectin failed: ', error.message);
         process.exit(1);

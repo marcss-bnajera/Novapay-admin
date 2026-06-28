@@ -28,9 +28,12 @@ export const Card = db.define('card', {
     },
 
     tipo_tarjeta: {
-        type: DataTypes.ENUM('DEBITO', 'CREDITO', 'PREPAGO', 'VIRTUAL'),
+        type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'DEBITO'
+        defaultValue: 'DEBITO',
+        validate: {
+            isIn: [['DEBITO', 'CREDITO', 'PREPAGO', 'VIRTUAL']]
+        }
     },
 
     estado: {
